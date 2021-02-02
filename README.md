@@ -1,2 +1,49 @@
 # LoRAS
 Localized Random Affine Shadowsampling
+
+This repo provides a python implementation of an imbalanced dataset oversampling
+technique known as Localized Random Affine Shadowsampling (LoRAS). This implementation 
+piggybacks off the package ``imbalanced-learn`` and thus aims to be as compatible
+as possible with it.
+
+
+## Dependencies
+- `imbalanced-learn`
+
+
+## Installation
+
+Installation requires an installation of [poetry][1] and the following shell commands:
+
+```shell
+$ git clone https://github.com/zoj613/pyloras.git
+$ cd pyloras/
+$ poetry install
+# add package to python's path
+$ export PYTHONPATH=$PWD:$PYTHONPATH 
+```
+
+## Usage
+
+```python
+from collections import Counter
+from pyloras import LORAS
+from sklearn.datasets import make_classification
+
+X, y = make_classification(n_samples=5000, n_features=2, n_informative=2,
+                           n_redundant=0, n_repeated=0, n_classes=3,
+                           n_clusters_per_class=1,
+                           weights=[0.01, 0.05, 0.94],
+                           class_sep=0.8, random_state=0)
+
+lrs = LORAS(random_state=0, embedding_params={'init':'pca', 'n_iter':250})
+X_resampled, y_resampled = lrs.fit_resample(X, y)
+print(sorted(Counter(y_resampled).items()))
+[(0, 4672), (1, 4454), (2, 4674)]
+```
+
+## References
+Bej, S., Davtyan, N., Wolfien, M. et al. LoRAS: an oversampling approach for imbalanced datasets. Mach Learn 110, 279–301 (2021). https://doi.org/10.1007/s10994-020-05913-4
+
+
+[1]: https://python-poetry.org/docs/pyproject/
