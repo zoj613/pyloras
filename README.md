@@ -13,8 +13,12 @@ as possible with it.
 
 ## Installation
 
-Installation requires an installation of [poetry][1] and the following shell commands:
+Using `pip`:
+```shell
+$ pip install -U pyloras
+```
 
+Installing from source requires an installation of [poetry][1] and the following shell commands:
 ```shell
 $ git clone https://github.com/zoj613/pyloras.git
 $ cd pyloras/
