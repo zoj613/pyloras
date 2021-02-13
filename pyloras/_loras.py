@@ -50,9 +50,9 @@ class LORAS(BaseOverSampler):
         will be used for all shadow samples generated.
     n_affine : int, default=None
         The number of shadow samples to use when generating the synthetic
-        samples through random affine combination. If given value must be
-        between ``2`` and the number of features using in the fitting data.
-        If not given, the value will be set to the number of features in
+        samples through random affine combination. If given, the value must be
+        between ``2`` and the number of features used in the fitting data.
+        If not given, the value will be set to the total number of features in
         fitting data.
     embedding_params : dict, default=None
         A dictionary of additional parameters to pass to the
@@ -158,10 +158,10 @@ class LORAS(BaseOverSampler):
             dirichlet_param=[1] * self.n_affine_,
             n_features=X.shape[1],
         )
-        loras_samples = []
-        loras_classes = []
+        X_res = [X_res.copy()]
+        y_res = [y_res.copy()]
         for class_sample, n_samples in self.sampling_strategy_.items():
-            data_indices = np.flatnonzero(y_res == class_sample)
+            data_indices = np.flatnonzero(y == class_sample)
             # number of synthetic samples per neighborhood group
             n_gen = n_samples // data_indices.shape[0]
             neighborhood_groups = self.nn_.kneighbors(
@@ -173,12 +173,11 @@ class LORAS(BaseOverSampler):
                     delayed(func)(X[i], class_sample, n_gen)
                     for i in neighborhood_groups
                 )
-            loras_samples.extend(samples)
-            loras_classes.extend(
-                [class_sample] * n_gen * neighborhood_groups.shape[0]
-            )
-        X_res = np.vstack((X_res, *loras_samples))
-        y_res = np.concatenate((y_res, loras_classes))
+            X_res.extend(samples)
+            y_res.extend([class_sample] * n_gen * neighborhood_groups.shape[0])
+        X_res = np.vstack(X_res)
+        y_res = np.hstack(y_res)
+
         return X_res, y_res
 
 
