@@ -34,16 +34,18 @@ from collections import Counter
 from pyloras import LORAS
 from sklearn.datasets import make_classification
 
-X, y = make_classification(n_samples=5000, n_features=2, n_informative=2,
+X, y = make_classification(n_samples=5000, n_features=5, n_informative=5,
                            n_redundant=0, n_repeated=0, n_classes=3,
                            n_clusters_per_class=1,
                            weights=[0.01, 0.05, 0.94],
                            class_sep=0.8, random_state=0)
 
-lrs = LORAS(random_state=0, embedding_params={'init':'pca', 'n_iter':250})
+lrs = LORAS(random_state=0, embedding_params={'perplexity': 35, 'n_iter': 250})
+print(sorted(Counter(y).items()))
+# [(0, 58), (1, 265), (2, 4677)]
 X_resampled, y_resampled = lrs.fit_resample(X, y)
 print(sorted(Counter(y_resampled).items()))
-[(0, 4672), (1, 4454), (2, 4674)]
+# [(0, 4672), (1, 4454), (2, 4674)]
 ```
 
 ## References
