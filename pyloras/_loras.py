@@ -158,8 +158,8 @@ class LORAS(BaseOverSampler):
             dirichlet_param=[1] * self.n_affine_,
             n_features=X.shape[1],
         )
-        X_res = [X_res.copy()]
-        y_res = [y_res.copy()]
+        X_res = [X_res]
+        y_res = [y_res]
         for class_sample, n_samples in self.sampling_strategy_.items():
             data_indices = np.flatnonzero(y == class_sample)
             # number of synthetic samples per neighborhood group
