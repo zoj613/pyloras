@@ -28,7 +28,7 @@ class LORAS(BaseOverSampler):
     This class implements the LoRAS oversampling technique for imbalanced
     datasets. This technique generates Gaussian noise in small neighborhoods
     around the minority class samples and then the finaly synthetic samples
-    are obtained by a convex combination of multipke noisy data points
+    are obtained by a convex combination of multiple noisy data points
     (shadowsamples).
 
     Parameters
@@ -36,7 +36,7 @@ class LORAS(BaseOverSampler):
     {sampling_strategy}
     n_neighbors : int or estimator object, default=None
         If ``int``, number of nearest neighbours to used to construct synthetic
-        samples.  If object, an estimator that inherits from
+        samples. If object, an estimator that inherits from
         :class:`~sklearn.neighbors.base.KNeighborsMixin` that will be used to
         find the k_neighbors.
     n_shadow : int, default=None
@@ -49,7 +49,7 @@ class LORAS(BaseOverSampler):
         will be used for all shadow samples generated.
     n_affine : int, default=None
         The number of shadow samples to use when generating the synthetic
-        samples through random affine combination. If given, the value must be
+        samples through random affine combinations. If given, the value must be
         between ``2`` and the number of features used in the fitting data.
         If not given, the value will be set to the total number of features in
         fitting data.
@@ -80,7 +80,7 @@ class LORAS(BaseOverSampler):
     Original dataset shape Counter({{1: 400, 2: 200, 0: 1400}})
     >>> X_res, y_res = l.fit_resample(X, y)
     >>> print(f"Resampled dataset shape % Counter(y_res))
-    Resampled dataset shape Counter({{1: 1200, 2: 1400, 0: 1400}})
+    Resampled dataset shape Counter({{1: 1400, 2: 1400, 0: 1400}})
 
     """
     def __init__(
