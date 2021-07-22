@@ -2,7 +2,7 @@
 Copyright (c) 2021, Zolisa Bleki
 SPDX-License-Identifier: BSD-3-Clause
 """
-from functools import partial
+from collections import defaultdict
 from math import ceil
 
 from imblearn.over_sampling.base import BaseOverSampler
@@ -12,10 +12,9 @@ from imblearn.utils._docstring import (
     _n_jobs_docstring,
 )
 from imblearn.utils._validation import check_neighbors_object
-from joblib import Parallel, delayed
 import numpy as np
 from sklearn.manifold import TSNE
-from sklearn.utils import check_random_state, parallel_backend
+from sklearn.utils import check_random_state
 
 
 @Substitution(
@@ -109,7 +108,7 @@ class LORAS(BaseOverSampler):
         """Initialize the parameter values to their appropriate values."""
         f_size = X.shape[1]
         self.n_affine_ = f_size if self.n_affine is None else self.n_affine
-        self.tsne_ = TSNE(n_components=2, n_jobs=self.n_jobs, random_state=rng)
+        self.tsne_ = TSNE(n_components=2, random_state=rng)
 
         if self.embedding_params is not None:
             self.tsne_.set_params(**self.embedding_params)
@@ -123,115 +122,59 @@ class LORAS(BaseOverSampler):
         if self.n_jobs is not None:
             self.nn_.set_params(n_jobs=self.n_jobs)
 
-        if self.n_affine_ >= self.nn_.n_neighbors * f_size:
-            raise ValueError(
-                "The number of shadow samples used to construct synthetic "
-                "samples must be less than `n_neighbors * number of features`"
-            )
-
         if self.n_shadow is None:
             self.n_shadow_ = max(ceil(2 * f_size / self.nn_.n_neighbors), 40)
         else:
             self.n_shadow_ = self.n_shadow
 
+        if self.n_affine_ >= self.nn_.n_neighbors * self.n_shadow_:
+            raise ValueError(
+                "The number of shadow samples used to create an affine random "
+                "combination must be less than `n_neighbors * n_shadow`."
+            )
+
         try:
             iter(self.std)
             self.std_ = self.std
         except TypeError:
-            self.std_ = [self.std] * X.shape[1]
+            self.std_ = [self.std] * f_size
 
     def _fit_resample(self, X, y):
-        X_res = X.copy()
-        y_res = y.copy()
-
         random_state = check_random_state(self.random_state)
         self._initialize_params(X, y, random_state)
-        X_embedded = self.tsne_.fit_transform(X_res)
-        self.nn_.fit(X_embedded)
+        n_features = X.shape[1]
 
-        func = partial(
-            _make_samples,
-            n_shadow=self.n_shadow_,
-            std=self.std_,
-            n_affine=self.n_affine_,
-            random_state=random_state,
-            dirichlet_param=[1] * self.n_affine_,
-            n_features=X.shape[1],
-        )
-        X_res = [X_res]
-        y_res = [y_res]
-        for class_sample, n_samples in self.sampling_strategy_.items():
-            data_indices = np.flatnonzero(y == class_sample)
-            # number of synthetic samples per neighborhood group
-            n_gen = n_samples // data_indices.shape[0]
-            neighborhood_groups = self.nn_.kneighbors(
-                X_embedded[data_indices],
-                return_distance=False
-            )
-            with parallel_backend('loky', n_jobs=self.n_jobs):
-                samples = Parallel()(
-                    delayed(func)(X[i], class_sample, n_gen)
-                    for i in neighborhood_groups
+        X_res = [X.copy()]
+        y_res = [y.copy()]
+        dirichlet_param = [1] * self.n_affine_
+        loras_samples = defaultdict(lambda : [])
+
+        for minority_class, samples_to_make in self.sampling_strategy_.items():
+            X_embedded = self.tsne_.fit_transform(X[y == minority_class])
+            self.nn_.fit(X_embedded)
+            neighborhoods = self.nn_.kneighbors(X_embedded, return_distance=False)
+            num_loras = ceil(samples_to_make / X_embedded.shape[0])
+            for neighbor_group in neighborhoods:
+                shadow_sample_size = (self.n_shadow_, self.nn_.n_neighbors, n_features)
+                total_shadow_samples = (
+                    X[neighbor_group] +
+                    random_state.normal(scale=self.std_, size=shadow_sample_size)
+                ).reshape(self.n_shadow_ * self.nn_.n_neighbors, n_features)
+                random_index = random_state.randint(
+                    0, total_shadow_samples.shape[0], size=(num_loras, self.n_affine_)
                 )
-            X_res.extend(samples)
-            y_res.extend([class_sample] * n_gen * neighborhood_groups.shape[0])
-        X_res = np.vstack(X_res)
-        y_res = np.hstack(y_res)
+                weights = random_state.dirichlet(dirichlet_param, size=num_loras)
+                loras_samples[minority_class].append(
+                    (weights[:, None] @ total_shadow_samples[random_index])
+                    .reshape(num_loras, n_features)
+                )
+            # keep only ``samples_to_make`` synthetic samples from the generated.
+            samples_to_drop = X_embedded.shape[0] * num_loras - samples_to_make
+            if samples_to_drop:
+                random_state.shuffle(loras_samples[minority_class])
+                X_res.append(
+                    np.concatenate(loras_samples[minority_class])[samples_to_drop:]
+                )
+                y_res.append([minority_class] * samples_to_make)
 
-        return X_res, y_res
-
-
-def _make_samples(
-    X_neighbors,
-    class_sample,
-    n_gen,
-    n_shadow,
-    std,
-    n_affine,
-    random_state,
-    dirichlet_param,
-    n_features
-):
-    """
-    Make LoRAS samples given data point and its nearest neighbors,
-
-    This function generates `n_gen` LoRAS synthetic samples given a data point
-    and its nearest neighbors in the 2d manifold created by t-SNE.
-
-    X_neighbors : numpy.ndarray
-        The neighborhood group (including the data point).
-    class_sample : scalar
-        The assigned class of the neighborhood group.
-    n_gen : int
-        The number of synthetic samples to generate.
-    n_shadow: int
-        The number of shadow samples to use.
-    std : list
-        Standard deviations per feature of the data point. These values are
-        used to sample the Gaussian noise used to create shadow samples.
-    n_affine : int
-        The size of the subset of shadow samples used to greate the affine
-        convex combination of augmented data points.
-    random_state : numpy.random.RandomState
-        The random number generating object.
-    dirichlet_param : list
-        A list of 1's whose size is equal to `n_affine`. It is used to
-        generate the affine combination weights who follow a Dirichlet
-        distribution.
-    n_features : int
-        Number of features per data point in the neighborhood group.
-
-    """
-    size = (n_shadow, X_neighbors.shape[0], n_features)
-    shadow_points = random_state.normal(scale=std, size=size)
-    shadow_sample = X_neighbors + shadow_points
-    shadow_sample = shadow_sample.reshape(
-        shadow_sample.shape[0] * shadow_sample.shape[1], -1
-    )
-    random_index = random_state.randint(
-        0, shadow_sample.shape[0], size=(n_gen, n_affine)
-    )
-    weights = random_state.dirichlet(dirichlet_param, size=n_gen)
-    samples = weights[:, None] @ shadow_sample[random_index]
-    samples = np.squeeze(samples)
-    return samples
+        return np.concatenate(X_res), np.concatenate(y_res)

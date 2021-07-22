@@ -54,7 +54,7 @@ def test_loras(data):
     assert lrs.n_shadow_ == 40
     assert isinstance(lrs.std_, list)
     assert np.allclose(lrs.std_, 0.005)
-    assert len(np.argwhere(y_res == 1)) == 18
+    assert len(y_res[y_res == 1]) == 21
 
     # test reporducibility
     lrs = LORAS(random_state=np.random.RandomState(0))
