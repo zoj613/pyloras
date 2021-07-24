@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    types: [ labeled ]
+
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ ubuntu-20.04, macOS-10.15, windows-2019 ]
+        python-version: [ '3.6', '3.7', '3.8', '3.9' ]
+
+    name: Python version - ${{ matrix.python-version }} - ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache/restor poetry lockfile
+        uses: actions/cache@v2
+        with:
+          path: .
+          key: deps-${{ hashFiles('poetry.lock') }}
+          restore-keys: deps-
+
+      - name: Install Dependencies
+        run: |
+          python3 -m pip install --upgrade pip setuptools wheel
+          pip install poetry
+          poetry install
+
+      - name: Run Pytest, report coverage
+        run: |
+          poetry run pytest -v --cov-branch --cov=pyloras tests/ --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: true

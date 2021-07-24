@@ -1,0 +1,64 @@
+# adapted from: https://github.com/pypa/cibuildwheel/tree/main/examples
+name: Release
+
+on:
+  release:
+    types: [ published ]
+
+  workflow_dispatch:
+
+jobs:
+  build_wheels_and_sdist:
+    name: Build wheels
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache/restore poetry lockfile
+        uses: actions/cache@v2
+        with:
+          path: .
+          key: deps-${{ hashFiles('poetry.lock') }}
+          restore-keys: deps-
+
+      - name: Install Dependencies and Cythonize extension
+        run: |
+          python3 -m pip install --upgrade pip setuptools wheel
+          pip install poetry
+          poetry install
+
+      - name: Build wheel and source distribution
+        run: |
+          poetry build
+          mv dist/* wheelhouse
+
+      - name: Store the wheelhouse directory
+        uses: actions/upload-artifact@v2
+        with:
+          name: wheels_and_sdist
+          path: wheelhouse
+          if-no-files-found: error
+
+
+  upload_pypi:
+    needs: [ build_wheels_and_sdist ]
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Pull built wheels and sdist
+        uses: actions/download-artifact@v2
+        with:
+          name: wheels_and_sdist
+          path: wheelhouse
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@v1.4.2
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
+          packages_dir: wheelhouse
