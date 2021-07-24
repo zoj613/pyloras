@@ -1,15 +1,29 @@
 [tool.poetry]
 name = "pyloras"
-version = "0.1.0"
+version = "0.1.0-beta.2"
 description = "LoRAS: An oversampling approach for imbalanced datasets"
 authors = ["Zolisa Bleki <zolisa.bleki@gmail.com>"]
 license = "BSD-3-Clause"
 readme = 'README.md'
 keywords = [
+    'loras',
     'imbalanced datasets',
     'oversampling',
     'machine learning',
     'localized affine random shadowsampling'
+]
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Machine Learning :: Data Science",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3 :: Only",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows :: Windows 10",
+    "Operating System :: MacOS :: MacOS X",
+]
+include = [
+    "LICENSE",
 ]
 
 [tool.poetry.dependencies]
@@ -19,6 +33,7 @@ imbalanced-learn = "^0.7.0"
 [tool.poetry.dev-dependencies]
 imbalanced-learn = "^0.7.0"
 pytest-cov = "*"
+toml = "^0.10.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
