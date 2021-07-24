@@ -150,14 +150,17 @@ class LORAS(BaseOverSampler):
         loras_samples = defaultdict(lambda : [])
 
         for minority_class, samples_to_make in self.sampling_strategy_.items():
-            X_embedded = self.tsne_.fit_transform(X[y == minority_class])
+            if samples_to_make == 0:
+                continue
+            X_minority = X[y == minority_class]
+            X_embedded = self.tsne_.fit_transform(X_minority)
             self.nn_.fit(X_embedded)
             neighborhoods = self.nn_.kneighbors(X_embedded, return_distance=False)
             num_loras = ceil(samples_to_make / X_embedded.shape[0])
             for neighbor_group in neighborhoods:
                 shadow_sample_size = (self.n_shadow_, self.nn_.n_neighbors, n_features)
                 total_shadow_samples = (
-                    X[neighbor_group] +
+                    X_minority[neighbor_group] +
                     random_state.normal(scale=self.std_, size=shadow_sample_size)
                 ).reshape(self.n_shadow_ * self.nn_.n_neighbors, n_features)
                 random_index = random_state.randint(
@@ -175,6 +178,6 @@ class LORAS(BaseOverSampler):
                 X_res.append(
                     np.concatenate(loras_samples[minority_class])[samples_to_drop:]
                 )
-                y_res.append([minority_class] * samples_to_make)
+            y_res.append([minority_class] * samples_to_make)
 
         return np.concatenate(X_res), np.concatenate(y_res)
