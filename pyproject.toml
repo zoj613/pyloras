@@ -19,6 +19,7 @@ imbalanced-learn = "^0.7.0"
 [tool.poetry.dev-dependencies]
 imbalanced-learn = "^0.7.0"
 pytest-cov = "*"
+toml = "^0.10.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
