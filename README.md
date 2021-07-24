@@ -1,4 +1,9 @@
 # LoRAS
+
+[![CI][3]](https://github.com/zoj613/pyloras/actions/workflows/build-and-test.yml)
+[![Codecov][4]](https://codecov.io/gh/zoj613/pyloras/)
+[![PyPI][5]](https://pypi.org/project/pyloras/#history)
+
 Localized Random Affine Shadowsampling
 
 This repo provides a python implementation of an imbalanced dataset oversampling
@@ -68,3 +73,6 @@ Bej, S., Davtyan, N., Wolfien, M. et al. LoRAS: an oversampling approach for imb
 
 [1]: https://python-poetry.org/docs/pyproject/
 [2]: https://imbalanced-learn.org/stable/auto_examples/over-sampling/plot_comparison_over_sampling.html#more-advanced-over-sampling-using-adasyn-and-smote
+[3]: https://img.shields.io/github/workflow/status/zoj613/pyloras/CI/main?style=flat-square
+[4]: https://img.shields.io/codecov/c/github/zoj613/pyloras?style=flat-square
+[5]: https://img.shields.io/github/v/release/zoj613/pyloras?include_prereleases&style=flat-square
