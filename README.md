@@ -48,8 +48,23 @@ print(sorted(Counter(y_resampled.astype(int)).items()))
 # [(0, 18674), (1, 18674), (2, 18674)]
 ```
 
+## Visualization
+
+Below is a comparision of `imbalanced-learn`'s `SMOTE` implementation with `LORAS`
+on the dummy data used in [this doc page][2] using the default parameters.
+
+![](./scripts/img/resampled_data.svg)
+![](./scripts/img/decision_fn.svg)
+![](./scripts/img/particularities.svg)
+
+The plots can be reproduced by running:
+```
+$ python scripts/compare_oversamplers.py --n_neighbors=<optional> --n_shadow=<optional> --n_affine=<optional>
+```
+
 ## References
 Bej, S., Davtyan, N., Wolfien, M. et al. LoRAS: an oversampling approach for imbalanced datasets. Mach Learn 110, 279–301 (2021). https://doi.org/10.1007/s10994-020-05913-4
 
 
 [1]: https://python-poetry.org/docs/pyproject/
+[2]: https://imbalanced-learn.org/stable/auto_examples/over-sampling/plot_comparison_over_sampling.html#more-advanced-over-sampling-using-adasyn-and-smote
