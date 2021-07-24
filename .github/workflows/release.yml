@@ -34,15 +34,13 @@ jobs:
           poetry install
 
       - name: Build wheel and source distribution
-        run: |
-          poetry build
-          mv dist/* wheelhouse
+        run: poetry build
 
       - name: Store the wheelhouse directory
         uses: actions/upload-artifact@v2
         with:
           name: wheels_and_sdist
-          path: wheelhouse
+          path: dist
           if-no-files-found: error
 
 
@@ -61,4 +59,4 @@ jobs:
         with:
           user: __token__
           password: ${{ secrets.PYPI_TOKEN }}
-          packages_dir: wheelhouse
+          packages_dir: dist
