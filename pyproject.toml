@@ -14,7 +14,7 @@ keywords = [
 ]
 classifiers = [
     "Intended Audience :: Science/Research",
-    "Topic :: Scientific/Engineering :: Machine Learning :: Data Science",
+    "Topic :: Scientific/Engineering",
     "License :: OSI Approved :: BSD License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
