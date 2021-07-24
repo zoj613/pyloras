@@ -173,11 +173,10 @@ class LORAS(BaseOverSampler):
                 )
             # keep only ``samples_to_make`` synthetic samples from the generated.
             samples_to_drop = X_embedded.shape[0] * num_loras - samples_to_make
-            if samples_to_drop:
-                random_state.shuffle(loras_samples[minority_class])
-                X_res.append(
-                    np.concatenate(loras_samples[minority_class])[samples_to_drop:]
-                )
+            random_state.shuffle(loras_samples[minority_class])
+            X_res.append(
+                np.concatenate(loras_samples[minority_class])[samples_to_drop:]
+            )
             y_res.append([minority_class] * samples_to_make)
 
         return np.concatenate(X_res), np.concatenate(y_res)
