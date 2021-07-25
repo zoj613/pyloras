@@ -79,3 +79,11 @@ def test_loras(data):
     lrs = LORAS(random_state=rng, embedding_params={'n_iter': 270})
     X_res, y_res = lrs.fit_resample(X, y)
     assert lrs.tsne_.n_iter == 270
+
+    # test if no samples are added for an already balanced dataset.
+    y = np.array([1., 1, 1., 1., 1., 1., 1., 1., 1, 1., 1., 1., 1., 1., 1.,
+                  0., 0, 0., 0., 0., 0., 0., 0., 0, 0., 0., 0., 0., 0., 0.])
+    X_res, y_res = lrs.fit_resample(X, y)
+    np.testing.assert_allclose(X_res, X)
+    np.testing.assert_allclose(y_res, y)
+
