@@ -53,11 +53,18 @@ class LORAS(BaseOverSampler):
         between ``2`` and the number of features used in the fitting data.
         If not given, the value will be set to the total number of features in
         fitting data.
-    embedding_params : dict, default=None
-        A dictionary of additional parameters to pass to the
-        :class:`~sklearn.manifold.TSNE` object when creating a 2D manifold of
-        the fitting data. The keys are the parameter names and the keys are the
-        values. If not given, the default values are used.
+    manifold_learner : object, default=None
+        An instance of an object that to perform a 2-dimensional embedding of
+        a dataset. It must implement the scikit-learn Estimator interface,
+        ``fit_transform`` and ``set_params`` methods must be implemented.
+        If not given, the :class:`~sklearn.manifold.TSNE` class is used to
+        obtain the 2d manifold of the data. Defaults to None.
+    manifold_learner_params : dict, default=None
+        A dictionary of additional parameters to pass to the instance of the
+        ``manifold_learner`` (or TSNE if ``manifold_learner`` is None) when
+        creating a 2D manifold of the fitting data. The keys are the parameter
+        names and the values are the values. If not given, the default values
+        are used.
     {random_state}
     {n_jobs}
 
@@ -91,7 +98,8 @@ class LORAS(BaseOverSampler):
         n_shadow=None,
         std=0.005,
         n_affine=None,
-        embedding_params=None,
+        manifold_learner=None,
+        manifold_learner_params=None,
         random_state=None,
         n_jobs=None
     ):
@@ -100,18 +108,35 @@ class LORAS(BaseOverSampler):
         self.n_shadow = n_shadow
         self.std = std
         self.n_affine = n_affine
-        self.embedding_params = embedding_params
+        self.manifold_learner = manifold_learner
+        self.manifold_learner_params = manifold_learner_params
         self.random_state = random_state
         self.n_jobs = n_jobs
+
+    def _check_2d_manifold_learner(self):
+        if (not hasattr(self.manifold_learner, "fit_transform") or
+                not hasattr(self.manifold_learner, "set_params")):
+            raise ValueError(
+                "The 2d manifold learner must implement the ``fit_transform`` "
+                "and ``set_params`` methods"
+            )
 
     def _initialize_params(self, X, y, rng):
         """Initialize the parameter values to their appropriate values."""
         f_size = X.shape[1]
         self.n_affine_ = f_size if self.n_affine is None else self.n_affine
-        self.tsne_ = TSNE(n_components=2, random_state=rng)
 
-        if self.embedding_params is not None:
-            self.tsne_.set_params(**self.embedding_params)
+        if self.manifold_learner:
+            self._check_2d_manifold_learner()
+            self.manifold_learner_ = self.manifold_learner
+        else:
+            self.manifold_learner_ = TSNE(n_components=2)
+        if self.manifold_learner_params is not None:
+            self.manifold_learner_.set_params(**self.manifold_learner_params)
+        try:
+            self.manifold_learner_.set_params(random_state=rng)
+        except ValueError:
+            pass
 
         _, y_counts = np.unique(y, return_counts=True)
         if self.n_neighbors is None:
@@ -153,7 +178,7 @@ class LORAS(BaseOverSampler):
             if samples_to_make == 0:
                 continue
             X_minority = X[y == minority_class]
-            X_embedded = self.tsne_.fit_transform(X_minority)
+            X_embedded = self.manifold_learner_.fit_transform(X_minority)
             self.nn_.fit(X_embedded)
             neighborhoods = self.nn_.kneighbors(X_embedded, return_distance=False)
             num_loras = ceil(samples_to_make / X_embedded.shape[0])
