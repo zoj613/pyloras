@@ -45,12 +45,17 @@ X, y = make_classification(n_samples=20000, n_features=5, n_informative=5,
                            weights=[0.01, 0.05, 0.94],
                            class_sep=0.8, random_state=0)
 
-lrs = LORAS(random_state=0, embedding_params={'perplexity': 35, 'n_iter': 250})
+lrs = LORAS(random_state=0, manifold_learner_params={'perplexity': 35, 'n_iter': 250})
 print(sorted(Counter(y).items()))
 # [(0, 270), (1, 1056), (2, 18674)]
 X_resampled, y_resampled = lrs.fit_resample(X, y)
 print(sorted(Counter(y_resampled.astype(int)).items()))
 # [(0, 18674), (1, 18674), (2, 18674)]
+
+# one can also use any custom 2d manifold learner via the ``manifold_learner` parameter
+from umap import UMAP
+LORAS(manifold_learner=UMAP()).fit_resample(X, y)
+
 ```
 
 ## Visualization
