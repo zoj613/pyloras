@@ -1,10 +1,11 @@
 [tool.poetry]
 name = "pyloras"
-version = "0.1.0-beta.2"
+version = "0.1.0-beta.3"
 description = "LoRAS: An oversampling approach for imbalanced datasets"
 authors = ["Zolisa Bleki <zolisa.bleki@gmail.com>"]
 license = "BSD-3-Clause"
 readme = 'README.md'
+repository = "https://github.com/zoj613/pyloras/"
 keywords = [
     'loras',
     'imbalanced datasets',
