@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
+from sklearn.base import BaseEstimator
 
 from pyloras import LORAS
 
@@ -76,9 +77,29 @@ def test_loras(data):
     with pytest.raises(ValueError):
         LORAS(n_affine=500).fit_resample(X, y)
 
-    lrs = LORAS(random_state=rng, embedding_params={'n_iter': 270})
+    lrs = LORAS(random_state=rng, manifold_learner_params={'n_iter': 270})
     X_res, y_res = lrs.fit_resample(X, y)
-    assert lrs.tsne_.n_iter == 270
+    assert lrs.manifold_learner_.n_iter == 270
+
+    # test for using a custom 2d manifold learner other than sklearn's TSNE.
+    class WrongCustomEmbedding(BaseEstimator):
+        def __init__(self, n_components=None):
+            self.n_components = None
+
+    class RightCustomEmbedding(WrongCustomEmbedding):
+        def fit_transform(self, X, y=None):
+            self.n_components_ = self.n_components if self.n_components else 2
+            return X[:, :2]
+
+    lrs = LORAS(manifold_learner=WrongCustomEmbedding())
+    with pytest.raises(ValueError):
+        lrs.fit_resample(X, y)
+
+    lrs = LORAS(
+        manifold_learner=RightCustomEmbedding(),
+        manifold_learner_params={'n_components': 2}
+    )
+    X_res, y_res = lrs.fit_resample(X, y)
 
     # test if no samples are added for an already balanced dataset.
     y = np.array([1., 1, 1., 1., 1., 1., 1., 1., 1, 1., 1., 1., 1., 1., 1.,
@@ -86,4 +107,3 @@ def test_loras(data):
     X_res, y_res = lrs.fit_resample(X, y)
     np.testing.assert_allclose(X_res, X)
     np.testing.assert_allclose(y_res, y)
-
