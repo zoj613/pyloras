@@ -34,7 +34,14 @@ jobs:
           key: deps-${{ hashFiles('poetry.lock') }}
           restore-keys: deps-
 
+      - name: Install BLAS on Ubuntu for numpy's build to work on Python3.9 
+        if: ${{matrix.os == 'ubuntu-20.04' && matrix.python-version == '3.9'}}
+        run: |
+          sudo apt-get install -y libopenblas-dev
+
       - name: Install Dependencies
+        env:
+          CFLAG: '-std=c99'
         run: |
           python3 -m pip install --upgrade pip setuptools wheel
           pip install poetry
