@@ -14,7 +14,8 @@ from imblearn.utils._docstring import (
 from imblearn.utils._validation import check_neighbors_object
 import numpy as np
 from sklearn.manifold import TSNE
-from sklearn.utils import check_random_state
+
+from ._common import check_random_state, safe_random_state
 
 
 @Substitution(
@@ -134,7 +135,7 @@ class LORAS(BaseOverSampler):
         if self.manifold_learner_params is not None:
             self.manifold_learner_.set_params(**self.manifold_learner_params)
         try:
-            self.manifold_learner_.set_params(random_state=rng)
+            self.manifold_learner_.set_params(random_state=safe_random_state(rng))
         except ValueError:
             pass
 
@@ -188,7 +189,7 @@ class LORAS(BaseOverSampler):
                     X_minority[neighbor_group] +
                     random_state.normal(scale=self.std_, size=shadow_sample_size)
                 ).reshape(self.n_shadow_ * self.nn_.n_neighbors, n_features)
-                random_index = random_state.randint(
+                random_index = random_state.integers(
                     0, total_shadow_samples.shape[0], size=(num_loras, self.n_affine_)
                 )
                 weights = random_state.dirichlet(dirichlet_param, size=num_loras)
