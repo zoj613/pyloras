@@ -10,7 +10,12 @@ on:
 jobs:
   build_wheels_and_sdist:
     name: Build wheels
-    runs-on: ubuntu-20.04
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ ubuntu-20.04 ]
+        python-version: [ '3.6' ]
 
     steps:
       - uses: actions/checkout@v2
