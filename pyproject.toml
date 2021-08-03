@@ -34,7 +34,7 @@ imbalanced-learn = "^0.7.0"
 
 [tool.poetry.dev-dependencies]
 imbalanced-learn = "^0.7.0"
-numpy = "1.17.0"
+numpy = "1.17.3"
 pytest-cov = "*"
 toml = "^0.10.2"
 

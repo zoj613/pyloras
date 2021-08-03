@@ -15,7 +15,8 @@ from imblearn.utils._docstring import (
 )
 from imblearn.utils._validation import check_neighbors_object
 import numpy as np
-from sklearn.utils import check_random_state
+
+from ._common import check_random_state
 
 
 class MinorityData(NamedTuple):
@@ -206,7 +207,7 @@ class ProWRAS(BaseOverSampler):
                 if cnn.n_neighbors < c.shape[0]:
                     cnn.set_params(n_jobs=self.n_jobs).fit(c)
                     neighborhoods = c[cnn.kneighbors(c, return_distance=False)]
-                    rand_idx = random_state.randint(
+                    rand_idx = random_state.integers(
                         0, neighborhoods.shape[0], size=n_samples
                     )
                 else:
@@ -226,7 +227,7 @@ class ProWRAS(BaseOverSampler):
                     shadows = groups[:, None, :, :] + norms
                     shadows = shadows.reshape(-1, n_features)
 
-                shadow_idx = random_state.randint(
+                shadow_idx = random_state.integers(
                     0, shadows.shape[0], size=(n_samples, n_affine)
                 )
 
