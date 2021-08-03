@@ -13,6 +13,8 @@ as possible with it.
 
 
 ## Dependencies
+- `Python >= 3.6`
+- `numpy >= 1.17.0`
 - `imbalanced-learn`
 
 
