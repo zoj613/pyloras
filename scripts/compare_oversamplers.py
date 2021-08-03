@@ -19,7 +19,7 @@ import seaborn as sns
 from sklearn.datasets import make_classification
 from sklearn.linear_model import LogisticRegression
 
-from pyloras import LORAS
+from pyloras import LORAS, ProWRAS
 
 sns.set_context("poster")
 
@@ -83,12 +83,13 @@ if __name__ == '__main__':
         n_affine=args.n_affine,
         n_neighbors=args.n_neighbors,
     )
-    fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(20, 6))
+    fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(15, 15))
 
     samplers = [
         FunctionSampler(),
         SMOTE(random_state=0),
         LORAS(**loras_params),
+        ProWRAS(random_state=0),
     ]
 
     for ax, sampler in zip(axs.ravel(), samplers):
@@ -97,13 +98,14 @@ if __name__ == '__main__':
     fig.tight_layout()
     plt.savefig('./scripts/img/resampled_data.svg')
 
-    fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(20, 6))
+    fig, axs = plt.subplots(nrows=1, ncols=4, figsize=(22, 6))
     clf = LogisticRegression()
 
     models = {
         "Without sampler": clf,
         "SMOTE sampler": make_pipeline(SMOTE(random_state=0), clf),
         "LORAS sampler": make_pipeline(LORAS(**loras_params), clf),
+        "ProWRAS sampler": make_pipeline(ProWRAS(random_state=0), clf),
     }
 
     for ax, (title, model) in zip(axs, models.items()):
@@ -115,9 +117,9 @@ if __name__ == '__main__':
     plt.savefig('./scripts/img/decision_fn.svg')
 
     X, y = create_dataset(n_samples=5000, weights=(0.01, 0.05, 0.94), class_sep=0.8)
-    samplers = [SMOTE(random_state=0), LORAS(**loras_params)]
+    samplers = [SMOTE(random_state=0), LORAS(**loras_params), ProWRAS(random_state=0)]
 
-    fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(15, 15))
+    fig, axs = plt.subplots(nrows=3, ncols=2, figsize=(15, 20))
     for ax, sampler in zip(axs, samplers):
         model = make_pipeline(sampler, clf).fit(X, y)
         plot_decision_function(
