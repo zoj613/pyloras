@@ -29,10 +29,12 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.6"
+numpy = "^1.17.0"
 imbalanced-learn = "^0.7.0"
 
 [tool.poetry.dev-dependencies]
 imbalanced-learn = "^0.7.0"
+numpy = "1.17.0"
 pytest-cov = "*"
 toml = "^0.10.2"
 
