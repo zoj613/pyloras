@@ -14,13 +14,9 @@ from imblearn.utils._docstring import (
 from imblearn.utils._validation import check_neighbors_object
 import numpy as np
 from sklearn.manifold import TSNE
-<<<<<<< HEAD
 
 from ._common import check_random_state, safe_random_state
-=======
-from sklearn.utils import check_random_state
-from sklearn.base import clone
->>>>>>> cloned manifold_learner
+
 
 
 @Substitution(
