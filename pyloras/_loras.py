@@ -14,8 +14,10 @@ from imblearn.utils._docstring import (
 from imblearn.utils._validation import check_neighbors_object
 import numpy as np
 from sklearn.manifold import TSNE
+from sklearn.base import clone
 
 from ._common import check_random_state, safe_random_state
+
 
 
 @Substitution(
@@ -122,14 +124,15 @@ class LORAS(BaseOverSampler):
                 "and ``set_params`` methods"
             )
 
+        return clone(self.manifold_learner)
+
     def _initialize_params(self, X, y, rng):
         """Initialize the parameter values to their appropriate values."""
         f_size = X.shape[1]
         self.n_affine_ = f_size if self.n_affine is None else self.n_affine
 
         if self.manifold_learner:
-            self._check_2d_manifold_learner()
-            self.manifold_learner_ = self.manifold_learner
+            self.manifold_learner_ = self._check_2d_manifold_learner()
         else:
             self.manifold_learner_ = TSNE(n_components=2)
         if self.manifold_learner_params is not None:
