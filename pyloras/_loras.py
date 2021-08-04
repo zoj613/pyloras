@@ -14,6 +14,7 @@ from imblearn.utils._docstring import (
 from imblearn.utils._validation import check_neighbors_object
 import numpy as np
 from sklearn.manifold import TSNE
+from sklearn.base import clone
 
 from ._common import check_random_state, safe_random_state
 
@@ -122,6 +123,8 @@ class LORAS(BaseOverSampler):
                 "The 2d manifold learner must implement the ``fit_transform`` "
                 "and ``set_params`` methods"
             )
+
+        return clone(self.manifold_learner)
 
     def _initialize_params(self, X, y, rng):
         """Initialize the parameter values to their appropriate values."""
