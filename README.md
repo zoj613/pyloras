@@ -77,6 +77,7 @@ $ python scripts/compare_oversamplers.py --n_neighbors=<optional> --n_shadow=<op
 ## References
 - Bej, S., Davtyan, N., Wolfien, M. et al. LoRAS: an oversampling approach for imbalanced datasets. Mach Learn 110, 279–301 (2021). https://doi.org/10.1007/s10994-020-05913-4
 - Bej, S., Schultz, K., Srivastava, P., Wolfien, M., & Wolkenhauer, O. (2021). A multi-schematic classifier-independent oversampling approach for imbalanced datasets. ArXiv, abs/2107.07349.
+- A. Tripathi, R. Chakraborty and S. K. Kopparapu, "A Novel Adaptive Minority Oversampling Technique for Improved Classification in Data Imbalanced Scenarios," 2020 25th International Conference on Pattern Recognition (ICPR), 2021, pp. 10650-10657, doi: 10.1109/ICPR48806.2021.9413002.
 
 
 [1]: https://python-poetry.org/docs/pyproject/
