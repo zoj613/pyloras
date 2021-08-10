@@ -145,6 +145,8 @@ class GAMUS(BaseOverSampler):
         y_res = [y.copy()]
 
         gamus_samples = defaultdict(lambda: [])
+        n_features = X.shape[1]
+
         for minority_class, samples_to_make in self.sampling_strategy_.items():
             if samples_to_make == 0:
                 continue
@@ -153,16 +155,11 @@ class GAMUS(BaseOverSampler):
             Xmin = X[mask]
             self.nn_.fit(Xmin)
             nns = self.nn_.kneighbors(Xmin, return_distance=False)[:, 1:]
-            n_hat = []
-            # TODO: Vectorize this loop if possible
-            for i, point in enumerate(Xmin):
-                scaled_diffs = (
-                    (point - Xmin[nns[i]])[:, :, None] * self.alpha_
-                ).swapaxes(1, 2).reshape(-1, X.shape[1])
-                # s_n + alpha * (s_n - s_k) as a 2d array
-                n_hat.append(point + scaled_diffs)
 
-            synth_minority = np.concatenate(n_hat)
+            XX = Xmin[:, None]
+            # shape: (n_pickedup, Xmin.shape[0], n_neighbors, n_features)
+            scaled_diffs = np.multiply.outer(self.alpha_, XX - Xmin[nns])
+            synth_minority = (XX + scaled_diffs).reshape(-1, n_features)
 
             self.gmm_.fit(np.concatenate((Xmin, synth_minority)))
 
