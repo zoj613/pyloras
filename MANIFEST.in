@@ -1,0 +1,4 @@
+prune .github
+prune .gitignore
+prune scripts
+prune tests

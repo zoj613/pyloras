@@ -1,11 +1,14 @@
-[tool.poetry]
+[project]
 name = "pyloras"
-version = "0.1.0-beta.5"
-description = "LoRAS: An oversampling approach for imbalanced datasets"
-authors = ["Zolisa Bleki <zolisa.bleki@gmail.com>"]
-license = "BSD-3-Clause"
-readme = 'README.md'
-repository = "https://github.com/zoj613/pyloras/"
+authors = [
+    {name = "Zolisa Bleki", email = "zolisa.bleki@gmail.com"}
+]
+description = "Experimental implementations of several (over/under)-sampling techniques not yet available in the imbalanced-learn library."
+readme = "README.md"
+dynamic = ["version"]
+requires-python = ">=3.8"
+dependencies = ["numpy >= 1.17.3", "imbalanced-learn < 1.0.0"]
+license = {text = "BSD 3-Clause License"}
 keywords = [
     'loras',
     'imbalanced datasets',
@@ -23,21 +26,20 @@ classifiers = [
     "Operating System :: Microsoft :: Windows :: Windows 10",
     "Operating System :: MacOS :: MacOS X",
 ]
-include = [
-    "LICENSE",
-]
 
-[tool.poetry.dependencies]
-python = "^3.6"
-numpy = "^1.17.0"
-imbalanced-learn = "^0.7.0"
-
-[tool.poetry.dev-dependencies]
-imbalanced-learn = "^0.7.0"
-numpy = "1.17.3"
-pytest-cov = "*"
-toml = "^0.10.2"
+[project.urls]
+source = "https://github.com/zoj613/pyloras"
+tracker = "https://github.com/zoj613/pyloras/issues"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["wheel", "setuptools>=61.0.0", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["pyloras"]
+
+[tool.setuptools.dynamic]
+version = {attr = "pyloras.__version__"}
+
+[tool.setuptools_scm]
+write_to = "pyloras/_version.py"
