@@ -5,7 +5,6 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-    types: [ labeled ]
 
   workflow_dispatch:
 
@@ -15,8 +14,8 @@ jobs:
 
     strategy:
       matrix:
-        os: [ ubuntu-20.04, macOS-10.15, windows-2019 ]
-        python-version: [ '3.6', '3.7', '3.8', '3.9' ]
+        os: [ ubuntu-20.04, macOS-11, windows-2019 ]
+        python-version: [ '3.8', '3.9', '3.10', '3.11' ]
 
     name: Python version - ${{ matrix.python-version }} - ${{ matrix.os }}
     steps:
@@ -27,32 +26,16 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Cache/restor poetry lockfile
-        uses: actions/cache@v2
-        with:
-          path: .
-          key: deps-${{ hashFiles('poetry.lock') }}
-          restore-keys: deps-
-
-      - name: Install BLAS on Ubuntu for numpy's build to work on Python3.9 
-        if: ${{matrix.os == 'ubuntu-20.04' && matrix.python-version == '3.9'}}
-        run: |
-          sudo apt-get install -y libopenblas-dev
-
       - name: Install Dependencies
-        env:
-          CFLAG: '-std=c99'
         run: |
           python3 -m pip install --upgrade pip setuptools wheel
-          pip install poetry
-          poetry install
-
+          pip install -r requirements-dev.txt
       - name: Run Pytest, report coverage
         run: |
-          poetry run pytest -v --cov-branch --cov=pyloras tests/ --cov-report=xml
-
+          pip install -e .
+          pytest -v --cov-branch --cov=polyagamma tests/ --cov-report=xml
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         with:
           files: ./coverage.xml
-          fail_ci_if_error: true
+          fail_ci_if_error: false
