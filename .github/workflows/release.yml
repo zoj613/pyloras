@@ -52,7 +52,7 @@ jobs:
       - name: Pull built wheel and sdist
         uses: actions/download-artifact@v3
         with:
-          name: wheels_and_sdist
+          name: wheel_and_sdist
           path: dist
 
       - name: Publish to PyPI
