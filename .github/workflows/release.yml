@@ -8,13 +8,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  build_wheels_and_sdist:
+  build_wheel_and_sdist:
     name: Build wheels
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        os: [ ubuntu-20.04, macOS-11, windows-2019 ]
+        os: [ ubuntu-20.04 ]
         python-version: [ '3.8' ]
 
     steps:
@@ -27,27 +27,21 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          python3 -m pip install --upgrade pip setuptools wheel cibuildwheel==2.12.3
+          python3 -m pip install --upgrade pip setuptools wheel
           pip install -r requirements-dev.txt
 
-      - name: Build wheels
-        run: cibuildwheel --output-dir wheelhouse --config-file pyproject.toml
+      - name: Build source distribution and pure wheel
+        run: python -m build
 
-      - name: Build source distribution
-        if: ${{ matrix.os == 'ubuntu-20.04' }}
-        run: |
-          python -m build --sdist
-          mv dist/*.gz wheelhouse
-
-      - name: Store the wheelhouse directory
+      - name: Store the built wheel and sdist
         uses: actions/upload-artifact@v3
         with:
-          name: wheels_and_sdist
-          path: wheelhouse
+          name: wheel_and_sdist
+          path: dist
           if-no-files-found: error
 
   upload_pypi:
-    needs: [ build_wheels_and_sdist ]
+    needs: [ build_wheel_and_sdist ]
     runs-on: ubuntu-20.04
     environment:
       name: pypi
@@ -55,7 +49,7 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - name: Pull built wheels and sdist
+      - name: Pull built wheel and sdist
         uses: actions/download-artifact@v3
         with:
           name: wheels_and_sdist
