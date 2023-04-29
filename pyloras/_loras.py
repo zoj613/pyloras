@@ -134,7 +134,7 @@ class LORAS(BaseOverSampler):
         if self.manifold_learner:
             self.manifold_learner_ = self._check_2d_manifold_learner()
         else:
-            self.manifold_learner_ = TSNE(n_components=2)
+            self.manifold_learner_ = TSNE(n_components=2, perplexity=5)
         if self.manifold_learner_params is not None:
             self.manifold_learner_.set_params(**self.manifold_learner_params)
         try:
