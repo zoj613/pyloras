@@ -15,5 +15,5 @@ def safe_random_state(random_state):
     estimator when the user has a ``np.random.Generator`` instead.
     """
     if isinstance(random_state, np.random.Generator):
-        return np.random.RandomState(random_state._bit_generator)
+        return np.random.RandomState(random_state.bit_generator)
     return random_state
